@@ -3,6 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"os"
 )
@@ -16,6 +17,7 @@ type Command struct {
 	Command string   `json:"command,omitempty"`
 	Args    []string `json:"args,omitempty"`
 	ID      string   `json:"id,omitempty"`
+	Attach  bool     `json:"attach,omitempty"`
 }
 
 type Response struct {
@@ -72,12 +74,19 @@ func (c *CLI) Execute() error {
 
 func (c *CLI) sendCommand(conn net.Conn, cmd Command) error {
 	encoder := json.NewEncoder(conn)
-	decoder := json.NewDecoder(conn)
-
 	if err := encoder.Encode(cmd); err != nil {
 		return fmt.Errorf("failed to send command: %v", err)
 	}
 
+	if cmd.Attach {
+		// Direct connection of stdin/stdout for interactive sessions
+		go io.Copy(conn, os.Stdin)
+		io.Copy(os.Stdout, conn)
+		return nil
+	}
+
+	// Non-interactive response handling
+	decoder := json.NewDecoder(conn)
 	var response Response
 	if err := decoder.Decode(&response); err != nil {
 		return fmt.Errorf("failed to read response: %v", err)

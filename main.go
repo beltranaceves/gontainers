@@ -1,7 +1,8 @@
-package gontainers
+package main
 
 import (
 	"fmt"
+	"gontainers/pkg/cli"
 	"log"
 	"os"
 )
@@ -12,7 +13,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	cmd := NewCLI()
+	cmd := cli.NewCLI()
 	if err := cmd.Execute(); err != nil {
 		log.Fatal(err)
 	}

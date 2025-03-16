@@ -1,4 +1,4 @@
-package gontainers
+package cli
 
 import (
 	"fmt"

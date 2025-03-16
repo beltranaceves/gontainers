@@ -1,4 +1,4 @@
-package gontainers
+package container
 
 import (
 	"net"

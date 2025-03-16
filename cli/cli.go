@@ -62,9 +62,16 @@ func (c *CLI) ps() error {
 			continue
 		}
 
-		if len(cmdline) > 0 && strings.HasPrefix(string(cmdline), "gontainer-") {
-			// Clean command string
-			cmdlineStr := strings.Join(strings.Split(string(cmdline), "\x00"), " ")
+		cmdlineStr := strings.Join(strings.Split(string(cmdline), "\x00"), " ")
+		if len(cmdline) > 0 && strings.HasPrefix(cmdlineStr, "gontainer-") {
+			// Extract container ID
+			containerId := strings.TrimPrefix(strings.Split(cmdlineStr, " ")[0], "gontainer-")
+
+			// Get the command without the container prefix
+			command := strings.TrimSpace(strings.TrimPrefix(cmdlineStr, "gontainer-"+containerId))
+			if command == "" {
+				command = "<none>"
+			}
 
 			// Get process state
 			status, _ := os.ReadFile(fmt.Sprintf("/proc/%s/status", process.Name()))
@@ -72,21 +79,39 @@ func (c *CLI) ps() error {
 			state := "UNKNOWN"
 			for _, line := range statusLines {
 				if strings.HasPrefix(line, "State:") {
-					state = strings.TrimSpace(strings.TrimPrefix(line, "State:"))
+					stateParts := strings.SplitN(strings.TrimPrefix(line, "State:"), " ", 2)
+					if len(stateParts) > 0 {
+						// Just take the first character (R for running, S for sleeping, etc.)
+						state = strings.TrimSpace(stateParts[0])
+						// Convert to a more user-friendly format
+						switch state {
+						case "R":
+							state = "RUNNING"
+						case "S":
+							state = "SLEEPING"
+						case "D":
+							state = "WAITING"
+						case "Z":
+							state = "ZOMBIE"
+						case "T":
+							state = "STOPPED"
+						}
+					}
 					break
 				}
 			}
 
 			containers = append(containers, containerInfo{
-				id:      strings.TrimPrefix(cmdlineStr, "gontainer-"),
-				command: cmdlineStr,
+
+				id:      containerId,
+				command: command,
 				pid:     process.Name(),
 				status:  state,
 			})
 		}
 	}
-
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
+	// Create a tabwriter with better formatting parameters
+	w := tabwriter.NewWriter(os.Stdout, 12, 8, 2, ' ', 0)
 
 	fmt.Fprintln(w, "CONTAINER ID\tCOMMAND\tPID\tSTATUS")
 	for _, container := range containers {
@@ -100,7 +125,6 @@ func (c *CLI) ps() error {
 
 	return nil
 }
-
 func (c *CLI) stop() error {
 	if len(os.Args) < 3 {
 		return fmt.Errorf("container ID required for stop")

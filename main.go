@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"gontainers/pkg/cli"
 	"log"
 	"os"
+
+	"github.com/beltranaceves/gontainers/cli"
 )
 
 func main() {

@@ -1,0 +1,7 @@
+0000000000000000000000000000000000000000 29ccf62951a03f36491405eddab18ada4680c134 beltran <beltran@DESKTOP-MALCB6L> 1740275166 +0100	clone: from https://github.com/beltranaceves/gontainers.git
+29ccf62951a03f36491405eddab18ada4680c134 afd0a9cc63888012973697f0c8639514940c1280 beltranaceves <beltranaceves@gmail.com> 1740288186 +0100	commit: initial structure for v0.2
+afd0a9cc63888012973697f0c8639514940c1280 569dbd9e6c914aa3ce30138254c60e64289c86de beltranaceves <beltranaceves@gmail.com> 1741482317 +0100	commit: i should start from scratch, learned enough but too much debt
+569dbd9e6c914aa3ce30138254c60e64289c86de dbc1669ca827e9200670ed4b9216d09f5d385508 beltranaceves <beltranaceves@gmail.com> 1741483044 +0100	commit: another article
+dbc1669ca827e9200670ed4b9216d09f5d385508 48544ead94768b924feda07336e2c012d4b7e1d8 beltranaceves <beltranaceves@gmail.com> 1741666586 +0100	commit: rolled back a lot of tech debt and started from scratch on basic commands
+48544ead94768b924feda07336e2c012d4b7e1d8 4712b2ffed4852620ec9b114afb3db0221fada73 beltranaceves <beltranaceves@gmail.com> 1741756023 +0100	commit: messing around with project structure
+4712b2ffed4852620ec9b114afb3db0221fada73 470eca14407177847300a23c32b90c371f5c1a49 beltranaceves <beltranaceves@gmail.com> 1742099018 +0100	commit: managed to fix import errors somehow

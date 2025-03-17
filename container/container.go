@@ -1,6 +1,7 @@
 package container
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -38,7 +39,7 @@ func NewContainer(command string, args []string) *Container {
 }
 
 func generateID() string {
-	return fmt.Sprintf("%d", time.Now().UnixNano())
+	return fmt.Sprintf("gontainer-%d", time.Now().UnixNano())
 }
 
 func (c *Container) Start() error {
@@ -51,6 +52,18 @@ func (c *Container) Start() error {
 			syscall.CLONE_NEWUTS,
 	}
 
+	// Set the process name to include the container ID for easier identification
+	cmd.SysProcAttr.Pdeathsig = syscall.SIGKILL
+
+	// Use the configured rootfs
+	if c.RootFS != "" {
+		// Set the root directory for the container
+		cmd.Dir = c.RootFS
+
+		// Optional: chroot to the rootfs (requires root privileges)
+		// This would require additional code to handle chroot
+	}
+
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -60,8 +73,48 @@ func (c *Container) Start() error {
 	}
 
 	c.Pid = cmd.Process.Pid // Store the PID
+
+	// Store container info for later retrieval
+	if err := c.saveContainerInfo(); err != nil {
+		return fmt.Errorf("failed to save container info: %v", err)
+	}
+
 	return nil
 }
+
+func (c *Container) saveContainerInfo() error {
+	// Create directory if it doesn't exist
+	infoDir := "/var/run/gontainers"
+	if err := os.MkdirAll(infoDir, 0755); err != nil {
+		return err
+	}
+
+	// Save basic container info to a file
+	infoPath := fmt.Sprintf("%s/%s.json", infoDir, c.ID)
+	info := map[string]interface{}{
+		"id":      c.ID,
+		"command": c.Command,
+		"args":    c.Args,
+		"pid":     c.Pid,
+		"rootfs":  c.RootFS,
+	}
+
+	// Convert to JSON
+	jsonData, err := json.Marshal(info)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(infoPath, jsonData, 0644)
+}
+func (c *Container) SetupFilesystem() *Filesystem {
+	// Create a unique root filesystem path for this container
+	rootPath := fmt.Sprintf("/var/run/gontainers/%s", c.ID)
+	fs := NewFilesystem(rootPath)
+	c.RootFS = rootPath
+	return fs
+}
+
 func (c *Container) Kill() error {
 	// Implementation to kill the container process
 	return syscall.Kill(c.Pid, syscall.SIGTERM)

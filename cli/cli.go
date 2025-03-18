@@ -26,14 +26,13 @@ func (c *CLI) Execute() error {
 
 	switch os.Args[1] {
 	case "run":
-		return run()
+		return runParent()
 	case "ps":
-		return c.ps()
+		return ps()
 	case "stop":
-		return c.stop()
+		return stop()
 	case "child":
-		// return child()
-		return fmt.Errorf("command not implemented")
+		return runChild()
 	default:
 		return fmt.Errorf("unknown command: %s", os.Args[1])
 	}

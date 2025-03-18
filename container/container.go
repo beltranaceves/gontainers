@@ -43,8 +43,31 @@ func generateID() string {
 }
 
 func (c *Container) Start() error {
-	cmd := exec.Command(c.Command, c.Args...)
 
+	// TODO: DOCS
+	// /proc/self/exe is a symbolic link to the current process's executable
+	// This is used to start a new process with the same executable
+	// This is used to run the current process again as a child process
+	// with the "child" argument to start the "sandboxing" process
+
+	cmd := exec.Command("/proc/self/exe", append([]string{"child"}, os.Args[2:]...)...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Env = []string{"GOCONTAINERS_CHILD=true"}
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Cloneflags: syscall.CLONE_NEWPID |
+			syscall.CLONE_NEWNS |
+			syscall.CLONE_NEWUTS |
+			// syscall.CLONE_NEWIPC | // TODO: find out if this breaks too much stuff
+			syscall.CLONE_NEWUSER |
+			syscall.CLONE_NEWNET,
+		Unshareflags: syscall.CLONE_NEWNS,
+	}
+
+	must(cmd.Run())
+
+	return nil
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWPID |
 			syscall.CLONE_NEWNS |
@@ -124,4 +147,10 @@ func (c *Container) SetupFilesystem() *Filesystem {
 func (c *Container) Kill() error {
 	// Implementation to kill the container process
 	return syscall.Kill(c.Pid, syscall.SIGTERM)
+}
+
+func must(err error) {
+	if err != nil {
+		panic(err)
+	}
 }

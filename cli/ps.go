@@ -7,7 +7,7 @@ import (
 	"text/tabwriter"
 )
 
-func (c *CLI) ps() error {
+func ps() error {
 	onlineContainers := getOnlineGontainersInfo()
 	offlineContainers := getOfflineGontainersInfo()
 	containers := append(onlineContainers, offlineContainers...)

@@ -83,14 +83,20 @@ func (c *Container) Start() error {
 }
 
 func (c *Container) saveContainerInfo() error {
-	// Create directory if it doesn't exist
-	infoDir := "/var/run/gontainers"
+	// Create directory inside the project
+	infoDir := "./containers"
 	if err := os.MkdirAll(infoDir, 0755); err != nil {
 		return err
 	}
 
+	// Extract ID without the "gontainer-" prefix
+	idWithoutPrefix := c.ID
+	if len(c.ID) > 10 && c.ID[:10] == "gontainer-" {
+		idWithoutPrefix = c.ID[10:]
+	}
+
 	// Save basic container info to a file
-	infoPath := fmt.Sprintf("%s/%s.json", infoDir, c.ID)
+	infoPath := fmt.Sprintf("%s/%s.json", infoDir, idWithoutPrefix)
 	info := map[string]interface{}{
 		"id":      c.ID,
 		"command": c.Command,
@@ -107,14 +113,14 @@ func (c *Container) saveContainerInfo() error {
 
 	return os.WriteFile(infoPath, jsonData, 0644)
 }
+
 func (c *Container) SetupFilesystem() *Filesystem {
 	// Create a unique root filesystem path for this container
-	rootPath := fmt.Sprintf("/var/run/gontainers/%s", c.ID)
+	rootPath := fmt.Sprintf("./containers/%s/rootfs", c.ID[10:])
 	fs := NewFilesystem(rootPath)
 	c.RootFS = rootPath
 	return fs
 }
-
 func (c *Container) Kill() error {
 	// Implementation to kill the container process
 	return syscall.Kill(c.Pid, syscall.SIGTERM)

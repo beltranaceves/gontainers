@@ -24,6 +24,8 @@ func (c *CLI) Execute() error {
 		return fmt.Errorf("command required")
 	}
 
+	fmt.Printf("Running %v as user %d in process %d \n", os.Args[1:], os.Getuid(), os.Getpid())
+
 	switch os.Args[1] {
 	case "run":
 		return runParent()

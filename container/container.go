@@ -62,6 +62,20 @@ func (c *Container) Start() error {
 			// syscall.CLONE_NEWIPC | // TODO: find out if this breaks too much stuff
 			syscall.CLONE_NEWUSER |
 			syscall.CLONE_NEWNET,
+		UidMappings: []syscall.SysProcIDMap{
+			{
+				ContainerID: 0,
+				HostID:      os.Getuid(),
+				Size:        1,
+			},
+		},
+		GidMappings: []syscall.SysProcIDMap{
+			{
+				ContainerID: 0,
+				HostID:      os.Getuid(),
+				Size:        1,
+			},
+		},
 		Unshareflags: syscall.CLONE_NEWNS,
 	}
 

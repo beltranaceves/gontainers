@@ -48,7 +48,8 @@ func runParent() error {
 func runChild() error {
 	fmt.Printf("Running %v \n", os.Args[2:])
 	// cg()
-
+	// TODO: before CHROOT, I should download/cache the filesystem
+	// TODO: CHROOT should be run here, and it should be delegated to the container package
 	cmd := exec.Command(os.Args[2], os.Args[3:]...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
